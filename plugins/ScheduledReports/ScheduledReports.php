@@ -365,18 +365,20 @@ class ScheduledReports extends \Piwik\Plugin
             }
             $mail->addTo($email);
 
-            // add unsubscribe links to content
+            // Add unsubscribe links to header and content
+            $link = SettingsPiwik::getPiwikUrl() . 'index.php?module=ScheduledReports&action=unsubscribe&token=' . $tokens[$email];
+
             if ($htmlContent) {
-                $link = SettingsPiwik::getPiwikUrl() . 'index.php?module=ScheduledReports&action=unsubscribe&token=' . $tokens[$email];
                 $bodyContent = str_replace(ReportRenderer\Html::UNSUBSCRIBE_LINK_PLACEHOLDER, Common::sanitizeInputValue($link), $htmlContent);
 
                 $mail->setBodyHtml($bodyContent);
             }
 
             if ($textContent) {
-                $link = SettingsPiwik::getPiwikUrl() . 'index.php?module=ScheduledReports&action=unsubscribe&token=' . $tokens[$email];
                 $mail->setBodyText($textContent . "\n\n".Piwik::translate('ScheduledReports_UnsubscribeFooter', [$link]));
             }
+
+            $mail->addHeader('List-Unsubscribe', "<$link>");
 
             try {
                 $mail->send();
@@ -391,6 +393,7 @@ class ScheduledReports extends \Piwik\Plugin
                 }
             }
             $mail->clearRecipients();
+            $mail->clearHeader('List-Unsubscribe');
         }
     }
 
